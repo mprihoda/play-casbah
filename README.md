@@ -1,3 +1,3 @@
 # Simple MongoDB/Casbah plugin for Play! Framework
 
-Very work in progress. The current stuff is in `develop` branch.
+Work in progress, in the 'works for me' kind of way. YMMV.
