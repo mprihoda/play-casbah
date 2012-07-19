@@ -2,6 +2,7 @@ package net.prihoda.play.casbah
 
 import com.mongodb.casbah.{MongoURI, MongoDB, MongoCollection, MongoConnection}
 import play.api.{Logger, Configuration, Application, Plugin}
+import scala.util.control.Exception._
 
 /**
  * Singleton facade for the MongoDatabasePlugin.
@@ -10,6 +11,9 @@ object MongoDatabase {
 
   // Error to throw on missing plugin
   private def error = throw new Exception("Mongo database plugin not registered.")
+
+  def available_?(implicit app: Application) = app.plugin[MongoDatabasePlugin].flatMap(p =>
+    allCatch opt (p.getConnection.getDatabaseNames() != null)).getOrElse(false)
 
   def getConnection(implicit app: Application) = app.plugin[MongoDatabasePlugin].map(_.getConnection).getOrElse(error)
 
@@ -77,7 +81,7 @@ class MongoDatabasePlugin(app: Application) extends Plugin {
       database <- Option(dbURI.database)
       username <- Option(dbURI.username)
       password <- Option(dbURI.password)
-    } _conn.getDB(database).authenticate(username,  password.mkString)
+    } _conn.getDB(database).authenticate(username, password.mkString)
   }
 
   override def onStop() {
