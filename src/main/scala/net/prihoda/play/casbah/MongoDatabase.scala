@@ -3,6 +3,7 @@ package net.prihoda.play.casbah
 import com.mongodb.casbah.{MongoURI, MongoDB, MongoCollection, MongoConnection}
 import play.api.{Logger, Configuration, Application, Plugin}
 import scala.util.control.Exception._
+import com.mongodb.casbah.gridfs.GridFS
 
 /**
  * Singleton facade for the MongoDatabasePlugin.
@@ -25,6 +26,9 @@ object MongoDatabase {
 
   def withCollection[T](name: String)(block: MongoCollection => T)(implicit app: Application): T =
     app.plugin[MongoDatabasePlugin].map(_.withCollection(name)(block)).getOrElse(error)
+
+  def withGridFS[T](block: GridFS => T)(implicit app: Application): T =
+    app.plugin[MongoDatabasePlugin].map(_.withGridFS(block)).getOrElse(error)
 
 }
 
@@ -72,6 +76,11 @@ class MongoDatabasePlugin(app: Application) extends Plugin {
    * @return The operation result
    */
   def withCollection[T](name: String)(block: MongoCollection => T): T = block(getDatabase()(name))
+
+  /**
+   * Perform an operation on gridFS.
+   */
+  def withGridFS[T](block: GridFS => T) = block(GridFS(getDatabase()))
 
   override def onStart() {
     Logger.debug("Connecting to mongodb @ " + dbURI)
